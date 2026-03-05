@@ -1,19 +1,25 @@
 # Model Routing Protocol
 
-Bloom Taxonomy に基づくタスク複雑度の自動判定と最適モデル選択。
+Bloom Taxonomy に基づくタスク複雑度の自動判定と最適モデル・エンジン選択。
+
+> **3エンジン体制:** Claude Code / Codex / Gemini の使い分けは `ENGINE_ROUTING.md` を参照。
+> このファイルは「どのClaudeモデルを使うか」と「どのエンジンを使うか」の両方を定義する。
 
 ---
 
 ## Bloom Taxonomy Levels
 
-| Level | Name | Description | Default Model |
-|-------|------|-------------|---------------|
-| L1 | REMEMBER | 単純な情報取得・一覧表示 | claude-haiku-4-5-20251001 |
-| L2 | UNDERSTAND | 内容の理解・要約・翻訳 | claude-haiku-4-5-20251001 |
-| L3 | APPLY | 既知パターンの適用・修正 | claude-sonnet-4-5-20250929 |
-| L4 | ANALYZE | 構造分析・根本原因特定 | claude-sonnet-4-5-20250929 |
-| L5 | EVALUATE | 判断・トレードオフ比較 | claude-sonnet-4-5-20250929 |
-| L6 | CREATE | 新規設計・アーキテクチャ | claude-opus-4-6-20250918 |
+| Level | Name | Description | Default Model | Primary Engine |
+|-------|------|-------------|---------------|----------------|
+| L1 | REMEMBER | 単純な情報取得・一覧表示 | claude-haiku-4-5-20251001 | Codex / Gemini |
+| L2 | UNDERSTAND | 内容の理解・要約・翻訳 | claude-haiku-4-5-20251001 | Gemini |
+| L3 | APPLY | 既知パターンの適用・修正 | claude-sonnet-4-6 | Codex |
+| L4 | ANALYZE | 構造分析・根本原因特定 | claude-sonnet-4-6 | Codex / Claude Code |
+| L5 | EVALUATE | 判断・トレードオフ比較 | claude-sonnet-4-6 | Claude Code |
+| L6 | CREATE | 新規設計・アーキテクチャ | claude-opus-4-6 | Claude Code |
+
+**Engine 選定の優先順位:** タスク種別 → Bloom Level → フォールバック（weekly limit）
+詳細は `ENGINE_ROUTING.md` を参照。
 
 ---
 
@@ -72,7 +78,10 @@ TASK_ROUTING:
 
 | Scenario | Strategy |
 |----------|----------|
-| 大量の情報取得タスク | Haiku で並列実行 |
-| 分析 + 実装の混合チェーン | 分析=Sonnet、実装=Sonnet |
-| アーキテクチャ判断 | Opus（ケチらない） |
-| テスト実行・lint | Haiku で十分 |
+| 大量の情報取得タスク | Codex o4-mini / Gemini で実行 |
+| アルゴリズム実装・テスト生成 | Codex o4-mini（仕様明確なら） |
+| バグ修正ループ（テストあり・再現明確） | Codex o4-mini → 3ループ超 → o3 → 未解決 → Claude Code |
+| 分析 + 実装の混合チェーン | 分析=Claude Code Sonnet、実装=Codex |
+| ドキュメント生成・コードベース調査 | Gemini |
+| アーキテクチャ判断・設計 | Claude Code Opus（ケチらない） |
+| Claude Code weekly limit 到達時 | Codex → Gemini でフォールバック |

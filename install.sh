@@ -85,6 +85,19 @@ done
 echo "[3/10] Downloading framework protocol..."
 cp "$TMPDIR/_templates/CLAUDE_PROJECT.md" ".claude/agents/_framework.md"
 
+echo "[3b/10] Installing common protocols (_common/)..."
+mkdir -p .claude/agents
+PROTOCOLS_INSTALLED=0
+for proto_file in "$TMPDIR"/_common/*.md; do
+  if [ -f "$proto_file" ]; then
+    proto_name=$(basename "$proto_file")
+    cp "$proto_file" ".claude/agents/_protocol_${proto_name}"
+    PROTOCOLS_INSTALLED=$((PROTOCOLS_INSTALLED + 1))
+    echo "  -> _protocol_${proto_name}"
+  fi
+done
+echo "  Installed: ${PROTOCOLS_INSTALLED} common protocols"
+
 echo "[4/10] Setting up shared knowledge..."
 if [ ! -f ".agents/PROJECT.md" ]; then
   cp "$TMPDIR/_templates/PROJECT.md" ".agents/PROJECT.md"
