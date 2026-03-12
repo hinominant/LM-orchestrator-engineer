@@ -117,8 +117,9 @@ When `## NEXUS_ROUTING` is present, return via `## NEXUS_HANDOFF`:
 |-----------|------|------|
 | コンポーネント仕様テンプレート | `_common/COMPONENT_SPEC.md` | 新規コンポーネント仕様作成時のフォーマット |
 | コンポーネント設計ガイドライン | `references/component-guidelines.md` | 設計原則・命名規則・ファイル構成パターン |
-| P1コンポーネント仕様 | `references/components/` | Button, Input, Select, Checkbox/Radio, Dialog, Table, Card |
-| デザイントークン | `muse/references/token-system.md` | トークン定義・命名規則・スケール |
+| コンポーネント仕様（18件） | `references/components/` | Button, Input, Select, Checkbox/Radio, Dialog, Table, Card, Textarea, DatePicker, GlobalNavigation, Header, Menu, SegmentedControls, SelectButton, SelectOneline, Tab, Toggle, Toast |
+| デザイントークン（DS v3） | `references/design-tokens.md` | Luna DS v3 プリミティブ・セマンティックトークン定義 |
+| デザイントークン（命名規則） | `muse/references/token-system.md` | トークン命名規則・スケール |
 | デザインパターン | `vision/references/patterns/` | コンポーネントの組み合わせパターン |
 | 日本語UIガイドライン | `palette/references/content-guidelines-ja.md` | ラベル・エラーメッセージ・日付フォーマット |
 
