@@ -2,7 +2,7 @@
 
 ## Overview
 
-エージェントチーム構築のための中央レジストリリポジトリ。68エージェント体制（simota/agent-skills 65 + Luna独自 3）。
+エージェントチーム構築のための中央レジストリリポジトリ。68エージェント体制（simota/agent-skills 65 + Luna独自 3）。27+プロトコル + 6スキル + ALICE（ARIS/LROS/NOVA/Secretary）統合。MCP連携・Cloud実行・Permissions対応。
 
 各プロジェクトに `install.sh` でエージェント定義を配布する。このリポジトリ自体はレジストリであり、直接 clone して使うものではない。
 
@@ -30,6 +30,7 @@ agent-orchestrator/
 │   ├── architect/       # メタデザイナー
 │   ├── anvil/           # CLI/TUI構築
 │   ├── arena/           # 競争/協力開発
+│   ├── auditor/         # Luna独自: 品質監査・ARIS Audit
 │   ├── atlas/           # アーキテクチャ分析
 │   ├── auditor/         # SPEC準拠監査
 │   ├── bard/            # devグランブル投稿
@@ -82,14 +83,23 @@ agent-orchestrator/
 │   ├── voyager/         # E2Eテスト
 │   ├── warden/          # UX品質ゲート
 │   └── (各エージェントに references/ サブディレクトリあり)
-├── commands/            # カスタムスラッシュコマンド（6個）
+│   └── _base.tmpl       # SKILL.md構造テンプレート
+├── commands/            # カスタムスラッシュコマンド（7個）
 │   ├── superpowers.md    # リサーチ→TDD→検証の大規模タスクモード
 │   ├── frontend-design.md # 数値基準付きデザインプロトコル
 │   ├── code-simplifier.md # git diffベースの軽量クリーンアップ
 │   ├── playground.md     # 単一HTMLインタラクティブツール生成
 │   ├── chrome.md         # Playwrightブラウザ操作自動化
-│   └── pr-review.md     # 5観点構造化PRレビュー
-├── _common/             # 共通プロトコル（22個）
+│   ├── pr-review.md     # 5観点構造化PRレビュー
+│   └── retro.md         # 振り返り→ARISフィードバック
+├── skills/              # 再利用可能スキル（6個）
+│   ├── data-retrieval.md   # LROS/Redashデータ取得
+│   ├── spec-compliance.md  # SPEC準拠チェック
+│   ├── test-coverage.md    # カバレッジ分析
+│   ├── git-pr-prep.md      # PR準備
+│   ├── diff-analysis.md    # Diff-aware分析
+│   └── aris-feedback.md    # ARIS成功/失敗記録
+├── _common/             # 共通プロトコル（27+）
 │   ├── AUTORUN.md
 │   ├── INTERACTION.md
 │   ├── GUARDRAIL.md
@@ -98,37 +108,40 @@ agent-orchestrator/
 │   ├── PROJECT_AFFINITY.md
 │   ├── REVERSE_FEEDBACK.md
 │   ├── MEMORY.md              # メモリ管理プロトコル
+│   ├── AGENT_MEMORY.md        # エージェントスコープメモリ
 │   ├── MAINTENANCE.md         # 定期メンテナンスプロトコル
 │   ├── MCP.md                 # MCP連携プロトコル
 │   ├── CLOUD_ROUTING.md       # Cloud実行ルーティングプロトコル
 │   ├── PROGRESS.md            # 進捗表示プロトコル
 │   ├── WORKFLOW_AUTOMATION.md # ワークフロー自動化プロトコル
+│   ├── CONTEXT_HYGIENE.md     # コンテキスト衛生管理
+│   ├── REVIEW_CHECKLIST.md    # レビューチェックリスト
+│   ├── PTC.md                 # Programmatic Tool Calling
+│   ├── TOOL_RISK.md           # ツールリスク管理（3-Hook体制）
+│   ├── MODEL_ROUTING.md       # Bloom Taxonomy モデルルーティング
+│   ├── ALICE_INTEGRATION.md   # ALICE統合プロトコル
 │   ├── CRITICAL_THINKING.md   # 批判的思考プロトコル
 │   ├── CONTEXT_RECOVERY.md    # セッション復帰プロトコル
 │   ├── TEST_POLICY.md         # テストポリシー（SKIP=FAIL）
 │   ├── SPEC_FIRST.md          # 仕様→テスト→実装パイプライン
-│   ├── MODEL_ROUTING.md       # Bloom Taxonomy モデル自動選択
 │   ├── ESCALATION.md          # 時間ベース3段階エスカレーション
 │   ├── SLIM_CONTEXT.md        # トークン予算管理
-│   ├── TOOL_RISK.md            # ツールリスク分類 + Hooks
-│   └── SKILL_DISCOVERY.md      # ボトムアップ スキル発見
+│   └── SKILL_DISCOVERY.md     # ボトムアップ スキル発見
 ├── _templates/          # プロジェクト配布テンプレート
 │   ├── CLAUDE_PROJECT.md  → .claude/agents/_framework.md
 │   ├── PROJECT.md         → .agents/PROJECT.md
 │   ├── LUNA_CONTEXT.md    → .agents/LUNA_CONTEXT.md
 │   ├── SKILL_TEMPLATE.md  # 新エージェント作成用
+│   ├── FRONTMATTER_SPEC.md # Frontmatter YAML仕様書
 │   ├── mcp-settings.json  # MCP設定テンプレート
-│   ├── settings.json      # Permissions設定テンプレート
+│   ├── settings.json       # Hook + Permissions設定テンプレート
 │   ├── settings.local.example.json  # 個人用Permissions例
 │   ├── devcontainer.json  # Codespaces devcontainer設定
 │   ├── post-create.sh     # Codespaces初期化スクリプト
-│   └── hooks/
-│       └── tool-risk.js   # PreToolUse リスク判定フック
-├── docs/
-│   ├── CLOUD_ARCHITECTURE.md  # Cloud-first実行基盤アーキテクチャ
-│   ├── QUICKSTART.md          # 社員向けクイックスタート
-│   ├── AGENT_SELECTION.md     # エージェント選択ガイド
-│   └── FAQ.md                 # よくある質問
+│   └── hooks/             # Hook実装
+│       ├── tool-risk.js    # PreToolUse リスク評価
+│       ├── post-tool-use.js # PostToolUse ログ記録
+│       └── stop-hook.js    # Stop セッションサマリ
 ├── scripts/
 │   ├── cloud/           # Cloud実行基盤（GitHub Codespaces）
 │   │   ├── codespace.sh    # Codespaces CLIラッパー（cs コマンド）
@@ -136,11 +149,19 @@ agent-orchestrator/
 │   ├── redash/          # Redash API ツール
 │   │   ├── query.sh
 │   │   └── .env.example
-│   └── setup-mcp.sh    # MCP一括セットアップ
-└── install.sh           # インストーラー（--with-mcp / --with-permissions対応）
+│   ├── setup-mcp.sh    # MCP一括セットアップ
+│   └── check-drift.sh  # SKILL.md構造ドリフト検出
+├── docs/                # ドキュメント
+│   ├── AGENT_SELECTION.md  # エージェント選択ガイド
+│   ├── QUICKSTART.md       # クイックスタート
+│   ├── FAQ.md              # よくある質問
+│   └── CLOUD_ARCHITECTURE.md # Cloud-first実行基盤アーキテクチャ
+├── .github/workflows/
+│   └── drift-check.yml  # PR時ドリフトチェックCI
+└── install.sh           # インストーラー（--with-hooks / --with-mcp / --with-permissions対応）
 ```
 
-## Custom Commands (6)
+## Custom Commands (7)
 
 エージェント召喚とは異なり、現在のセッションにワークフローモードを適用するスラッシュコマンド。
 
@@ -152,21 +173,52 @@ agent-orchestrator/
 | `/playground` | 外部依存ゼロの単一HTMLツール生成 |
 | `/chrome` | Playwright でブラウザ操作自動化 |
 | `/pr-review` | 5観点（テスト/エラー/型/品質/シンプル化）の構造化レビュー |
+| `/retro` | 振り返り→ARISフィードバック |
+
+## Skills (6)
+
+エージェントから呼び出される再利用可能な手順スキル（原則 haiku で実行）。
+
+| Skill | Purpose |
+|-------|---------|
+| `data-retrieval` | LROS/Redash データ取得 |
+| `spec-compliance` | SPEC準拠チェック |
+| `test-coverage` | カバレッジ分析 |
+| `git-pr-prep` | PR準備 |
+| `diff-analysis` | Diff-aware分析 |
+| `aris-feedback` | ARIS成功/失敗記録 |
+
+## ALICE Integration
+
+ALICE（ARIS/LROS/NOVA/Secretary）統合。詳細は `_common/ALICE_INTEGRATION.md` 参照。
+
+| Component | Role | Agent |
+|-----------|------|-------|
+| ARIS | 判断エンジン | CEO (4-mind), Auditor |
+| LROS | データ基盤 | Analyst (SSoT) |
+| NOVA | 分析エンジン | Analyst |
+| Secretary | 実行エンジン | Nexus |
 
 ## Installation (per-project)
 
 ```bash
 # 全68エージェント
-curl -sL https://raw.githubusercontent.com/Luna-company/agent-orchestrator/main/install.sh | bash
+curl -sL https://raw.githubusercontent.com/hinominant/agent-orchestrator/main/install.sh | bash
 
 # 選択インストール
-curl -sL https://raw.githubusercontent.com/Luna-company/agent-orchestrator/main/install.sh | bash -s -- nexus builder radar ceo
+curl -sL https://raw.githubusercontent.com/hinominant/agent-orchestrator/main/install.sh | bash -s -- nexus builder radar ceo
+
+# Hooks付き
+./install.sh --with-hooks
 
 # MCP付きインストール
 ./install.sh --with-mcp
 
 # Permissions付きインストール
 ./install.sh --with-permissions
+
+# 全オプション同時
+./install.sh --with-hooks --with-mcp --with-permissions
 ```
 
 ## Core Principles
@@ -188,7 +240,8 @@ curl -sL https://raw.githubusercontent.com/Luna-company/agent-orchestrator/main/
 
 ### エージェント追加
 
-1. `agents/[name]/SKILL.md` を `_templates/SKILL_TEMPLATE.md` に従い作成
+1. `agents/[name]/SKILL.md` を `agents/_base.tmpl` に従い作成（frontmatter必須）
 2. `install.sh` の `ALL_AGENTS` に名前を追加
 3. `_common/PROJECT_AFFINITY.md` にアフィニティを追記
 4. `README.md` / `CLAUDE.md` の Agents 一覧を更新
+5. `scripts/check-drift.sh [name]` でテンプレート準拠を検証
