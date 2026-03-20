@@ -53,25 +53,28 @@ mkdir -p .agents
 mkdir -p .agents/memory
 
 # Clone to temp directory for reliable file access
-TMPDIR=$(mktemp -d)
-trap "rm -rf $TMPDIR" EXIT
+CLONE_DIR=$(mktemp -d)
+trap "rm -rf $CLONE_DIR" EXIT
 
 echo "Downloading agent definitions..."
-git clone --depth 1 --branch "$BRANCH" "https://github.com/${REPO}.git" "$TMPDIR" 2>/dev/null
+if ! git clone --depth 1 --branch "$BRANCH" "https://github.com/${REPO}.git" "$CLONE_DIR" 2>&1; then
+  echo "Error: Failed to download goto-orchestrator. Check your internet connection and try again."
+  exit 1
+fi
 
 INSTALLED=0
 SKIPPED=0
 
 echo "[1/12] Installing agent definitions..."
 for agent in $AGENTS; do
-  if [ -d "$TMPDIR/agents/$agent" ]; then
+  if [ -d "$CLONE_DIR/agents/$agent" ]; then
     # Copy SKILL.md as flat file for Claude Code agent discovery
-    cp "$TMPDIR/agents/$agent/SKILL.md" ".claude/agents/${agent}.md"
+    cp "$CLONE_DIR/agents/$agent/SKILL.md" ".claude/agents/${agent}.md"
     # Copy references/ if they exist (for agents that need supplementary docs)
-    if [ -d "$TMPDIR/agents/$agent/references" ]; then
+    if [ -d "$CLONE_DIR/agents/$agent/references" ]; then
       rm -rf ".claude/agents/${agent}/references"
       mkdir -p ".claude/agents/${agent}"
-      cp -r "$TMPDIR/agents/$agent/references" ".claude/agents/${agent}/"
+      cp -r "$CLONE_DIR/agents/$agent/references" ".claude/agents/${agent}/"
     fi
     INSTALLED=$((INSTALLED + 1))
     echo "  -> ${agent}"
@@ -83,7 +86,7 @@ done
 
 echo "[2/12] Installing custom commands..."
 COMMANDS_INSTALLED=0
-for cmd_file in "$TMPDIR"/commands/*.md; do
+for cmd_file in "$CLONE_DIR"/commands/*.md; do
   if [ -f "$cmd_file" ]; then
     cp "$cmd_file" ".claude/commands/"
     cmd_name=$(basename "$cmd_file" .md)
@@ -93,12 +96,12 @@ for cmd_file in "$TMPDIR"/commands/*.md; do
 done
 
 echo "[3/12] Downloading framework protocol..."
-cp "$TMPDIR/_templates/CLAUDE_PROJECT.md" ".claude/agents/_framework.md"
+cp "$CLONE_DIR/_templates/CLAUDE_PROJECT.md" ".claude/agents/_framework.md"
 
 echo "[4/12] Installing common protocols (_common/)..."
 mkdir -p .claude/agents
 PROTOCOLS_INSTALLED=0
-for proto_file in "$TMPDIR"/_common/*.md; do
+for proto_file in "$CLONE_DIR"/_common/*.md; do
   if [ -f "$proto_file" ]; then
     proto_name=$(basename "$proto_file")
     cp "$proto_file" ".claude/agents/_protocol_${proto_name}"
@@ -110,7 +113,7 @@ echo "  Installed: ${PROTOCOLS_INSTALLED} common protocols"
 
 echo "[5/12] Installing skills..."
 SKILLS_INSTALLED=0
-for skill_file in "$TMPDIR"/skills/*.md; do
+for skill_file in "$CLONE_DIR"/skills/*.md; do
   if [ -f "$skill_file" ]; then
     cp "$skill_file" ".claude/skills/"
     skill_name=$(basename "$skill_file" .md)
@@ -121,7 +124,7 @@ done
 
 echo "[6/12] Setting up shared knowledge..."
 if [ ! -f ".agents/PROJECT.md" ]; then
-  cp "$TMPDIR/_templates/PROJECT.md" ".agents/PROJECT.md"
+  cp "$CLONE_DIR/_templates/PROJECT.md" ".agents/PROJECT.md"
   echo "  -> Created .agents/PROJECT.md"
 else
   echo "  -> .agents/PROJECT.md already exists, skipping"
@@ -129,8 +132,8 @@ fi
 
 echo "[7/12] Setting up project context..."
 if [ ! -f ".agents/PROJECT_CONTEXT.md" ]; then
-  if [ -f "$TMPDIR/_templates/PROJECT_CONTEXT.md" ]; then
-    cp "$TMPDIR/_templates/PROJECT_CONTEXT.md" ".agents/PROJECT_CONTEXT.md"
+  if [ -f "$CLONE_DIR/_templates/PROJECT_CONTEXT.md" ]; then
+    cp "$CLONE_DIR/_templates/PROJECT_CONTEXT.md" ".agents/PROJECT_CONTEXT.md"
   else
     cat > ".agents/PROJECT_CONTEXT.md" << 'CONTEXT_EOF'
 # Project Context
@@ -163,35 +166,35 @@ fi
 
 echo "[8/12] Copying MCP scripts and templates..."
 mkdir -p .claude/scripts
-if [ -f "$TMPDIR/scripts/setup-mcp.sh" ]; then
-  cp "$TMPDIR/scripts/setup-mcp.sh" ".claude/scripts/setup-mcp.sh"
+if [ -f "$CLONE_DIR/scripts/setup-mcp.sh" ]; then
+  cp "$CLONE_DIR/scripts/setup-mcp.sh" ".claude/scripts/setup-mcp.sh"
   chmod +x ".claude/scripts/setup-mcp.sh"
   echo "  -> Copied scripts/setup-mcp.sh"
 else
   echo "  [WARN] scripts/setup-mcp.sh not found in repo, skipping"
 fi
-if [ -f "$TMPDIR/_templates/mcp-settings.json" ]; then
-  cp "$TMPDIR/_templates/mcp-settings.json" ".claude/mcp-settings.template.json"
+if [ -f "$CLONE_DIR/_templates/mcp-settings.json" ]; then
+  cp "$CLONE_DIR/_templates/mcp-settings.json" ".claude/mcp-settings.template.json"
   echo "  -> Copied mcp-settings.template.json"
 else
   echo "  [WARN] _templates/mcp-settings.json not found in repo, skipping"
 fi
 # Cloud scripts
-if [ -d "$TMPDIR/scripts/cloud" ]; then
+if [ -d "$CLONE_DIR/scripts/cloud" ]; then
   mkdir -p .claude/scripts/cloud
   for f in cloud.sh codespace.sh ec2.sh setup-billing-alert.sh .env.example; do
-    if [ -f "$TMPDIR/scripts/cloud/$f" ]; then
-      cp "$TMPDIR/scripts/cloud/$f" ".claude/scripts/cloud/$f"
+    if [ -f "$CLONE_DIR/scripts/cloud/$f" ]; then
+      cp "$CLONE_DIR/scripts/cloud/$f" ".claude/scripts/cloud/$f"
       [[ "$f" == *.sh ]] && chmod +x ".claude/scripts/cloud/$f"
     fi
   done
   echo "  -> Copied cloud execution scripts"
 fi
 # devcontainer template
-if [ -f "$TMPDIR/_templates/devcontainer.json" ]; then
+if [ -f "$CLONE_DIR/_templates/devcontainer.json" ]; then
   mkdir -p .devcontainer
-  cp "$TMPDIR/_templates/devcontainer.json" ".devcontainer/devcontainer.json"
-  [ -f "$TMPDIR/_templates/post-create.sh" ] && cp "$TMPDIR/_templates/post-create.sh" ".devcontainer/post-create.sh"
+  cp "$CLONE_DIR/_templates/devcontainer.json" ".devcontainer/devcontainer.json"
+  [ -f "$CLONE_DIR/_templates/post-create.sh" ] && cp "$CLONE_DIR/_templates/post-create.sh" ".devcontainer/post-create.sh"
   echo "  -> Copied devcontainer template"
 fi
 
@@ -259,15 +262,21 @@ fi
 
 echo "[11/12] Permissions setup..."
 if [ "$WITH_PERMISSIONS" = true ]; then
-  if [ -f "$TMPDIR/_templates/settings.json" ]; then
+  # --with-permissions implies hooks must also be installed, since settings.json
+  # references hook files. Auto-enable hooks to prevent broken install.
+  if [ "$WITH_HOOKS" != true ]; then
+    echo "  [NOTE] --with-permissions requires hooks. Enabling --with-hooks automatically."
+    WITH_HOOKS=true
+  fi
+  if [ -f "$CLONE_DIR/_templates/settings.json" ]; then
     if [ ! -f ".claude/settings.json" ]; then
-      cp "$TMPDIR/_templates/settings.json" ".claude/settings.json"
+      cp "$CLONE_DIR/_templates/settings.json" ".claude/settings.json"
       echo "  -> Created .claude/settings.json (project permissions + hooks)"
     else
       echo "  -> .claude/settings.json already exists, skipping"
     fi
-    if [ -f "$TMPDIR/_templates/settings.local.example.json" ]; then
-      cp "$TMPDIR/_templates/settings.local.example.json" ".claude/settings.local.example.json"
+    if [ -f "$CLONE_DIR/_templates/settings.local.example.json" ]; then
+      cp "$CLONE_DIR/_templates/settings.local.example.json" ".claude/settings.local.example.json"
       echo "  -> Copied settings.local.example.json"
     fi
   else
@@ -279,59 +288,55 @@ fi
 
 echo "[12/12] Hooks setup (4-Hook体制)..."
 if [ "$WITH_HOOKS" = true ]; then
-  # Install hooks to both project-local and global locations
-  mkdir -p .claude/hooks
-  HOOKS_DIR="$HOME/.claude/hooks"
-  mkdir -p "$HOOKS_DIR"
-
-  for hook_file in "$TMPDIR"/_templates/hooks/*.js; do
-    if [ -f "$hook_file" ]; then
-      hook_name=$(basename "$hook_file")
-      # Copy to project-local
-      cp "$hook_file" ".claude/hooks/"
-      # Copy to global
-      cp "$hook_file" "$HOOKS_DIR/"
-      chmod +x "$HOOKS_DIR/$hook_name"
-      echo "  -> ${hook_name}"
-    fi
-  done
-
-  # Copy settings.json with hook configuration if not exists
-  if [ -f "$TMPDIR/_templates/settings.json" ]; then
-    if [ ! -f ".claude/settings.json" ]; then
-      cp "$TMPDIR/_templates/settings.json" ".claude/settings.json"
-      echo "  -> settings.json (permissions + hooks config)"
-    else
-      echo "  -> .claude/settings.json already exists"
-    fi
-  fi
-
-  # Global settings hint
-  SETTINGS_FILE="$HOME/.claude/settings.json"
-  if [ -f "$SETTINGS_FILE" ]; then
-    if ! grep -q "tool-risk" "$SETTINGS_FILE" 2>/dev/null; then
-      echo "  [NOTE] Add hook config to your ~/.claude/settings.json:"
-      echo '    "hooks": {'
-      echo '      "PreToolUse":   [{ "matcher": "*", "hooks": [{ "type": "command", "command": "node ~/.claude/hooks/tool-risk.js" }] }],'
-      echo '      "PostToolUse":  [{ "matcher": "*", "hooks": [{ "type": "command", "command": "node ~/.claude/hooks/post-tool-use.js" }] }],'
-      echo '      "Elicitation":  [{ "matcher": "*", "hooks": [{ "type": "command", "command": "node ~/.claude/hooks/elicitation-guard.js" }] }],'
-      echo '      "Stop":         [{ "matcher": "*", "hooks": [{ "type": "command", "command": "node ~/.claude/hooks/stop-hook.js" }] }]'
-      echo '    }'
-    else
-      echo "  -> Hook already configured in global settings.json"
-    fi
+  # Check Node.js is installed (hooks require it)
+  if ! command -v node >/dev/null 2>&1; then
+    echo "  [ERROR] Node.js is required for hooks but not found."
+    echo "  Install Node.js 18+ from https://nodejs.org/ and re-run with --with-hooks."
+    echo "  Skipping hook installation."
   else
-    echo "  [NOTE] ~/.claude/settings.json not found."
-    echo "  Add this to your settings.json hooks section:"
-    echo '    "hooks": {'
-    echo '      "PreToolUse":   [{ "matcher": "*", "hooks": [{ "type": "command", "command": "node ~/.claude/hooks/tool-risk.js" }] }],'
-    echo '      "PostToolUse":  [{ "matcher": "*", "hooks": [{ "type": "command", "command": "node ~/.claude/hooks/post-tool-use.js" }] }],'
-    echo '      "Elicitation":  [{ "matcher": "*", "hooks": [{ "type": "command", "command": "node ~/.claude/hooks/elicitation-guard.js" }] }],'
-    echo '      "Stop":         [{ "matcher": "*", "hooks": [{ "type": "command", "command": "node ~/.claude/hooks/stop-hook.js" }] }]'
-    echo '    }'
-  fi
+    NODE_VER=$(node --version 2>/dev/null | sed 's/v//')
+    echo "  Node.js ${NODE_VER} detected"
 
-  echo "  Hooks installed (4-Hook体制: PreToolUse + PostToolUse + Elicitation + Stop)"
+    # Install hooks to project-local location only
+    # The project .claude/settings.json already wires hooks from .claude/hooks/
+    mkdir -p .claude/hooks
+    for hook_file in "$CLONE_DIR"/_templates/hooks/*.js; do
+      if [ -f "$hook_file" ]; then
+        hook_name=$(basename "$hook_file")
+        cp "$hook_file" ".claude/hooks/"
+        echo "  -> ${hook_name}"
+      fi
+    done
+
+    # Also install to global location for cross-project use
+    HOOKS_DIR="$HOME/.claude/hooks"
+    mkdir -p "$HOOKS_DIR"
+    for hook_file in "$CLONE_DIR"/_templates/hooks/*.js; do
+      if [ -f "$hook_file" ]; then
+        hook_name=$(basename "$hook_file")
+        cp "$hook_file" "$HOOKS_DIR/"
+        chmod +x "$HOOKS_DIR/$hook_name"
+      fi
+    done
+
+    # Copy settings.json with hook configuration if not exists
+    if [ -f "$CLONE_DIR/_templates/settings.json" ]; then
+      if [ ! -f ".claude/settings.json" ]; then
+        cp "$CLONE_DIR/_templates/settings.json" ".claude/settings.json"
+        echo "  -> settings.json (permissions + hooks config)"
+      else
+        echo "  -> .claude/settings.json already exists"
+      fi
+    fi
+
+    echo "  Hooks installed (4-Hook体制: PreToolUse + PostToolUse + Elicitation + Stop)"
+    echo "  Hooks location: .claude/hooks/ (project) + ~/.claude/hooks/ (global)"
+    echo "  [NOTE] Project hooks (.claude/settings.json) are active for this project."
+    echo "  To activate hooks globally across ALL projects, add the hooks config to"
+    echo "  ~/.claude/settings.json (see docs/QUICKSTART.md for the exact JSON)."
+    echo "  Do NOT add global hooks if project hooks are already active — that would"
+    echo "  cause double execution (each tool call runs hooks twice)."
+  fi
 else
   echo "  -> Skipped"
   echo "  ★ 推奨: --with-hooks を付けると Tool Risk Hooks（4-Hook体制）が有効になります"
@@ -384,7 +389,7 @@ echo "  /pr-review #123"
 echo ""
 echo "MCP Integration:"
 echo "  # Global MCP setup (recommended)"
-echo "  bash scripts/setup-mcp.sh"
+echo "  bash .claude/scripts/setup-mcp.sh"
 echo ""
 echo "  # Project-specific PostgreSQL MCP"
 echo "  claude mcp add postgres -- npx -y @modelcontextprotocol/server-postgres 'postgresql://user:pass@host:5432/db'"

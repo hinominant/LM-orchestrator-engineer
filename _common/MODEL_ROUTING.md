@@ -50,6 +50,7 @@ Skills は原則 `haiku` で実行（定型手順のため）:
 | diff-analysis | haiku | diff解析 |
 | secret-scan | haiku | シークレット検出スキャン |
 | safety-check | haiku | 安全性チェック |
+| external-install-check | haiku | 外部コンテンツ導入前セキュリティチェック |
 
 ### Command層（コマンド実行）
 Commands は呼び出し元セッションのモデルを継承。

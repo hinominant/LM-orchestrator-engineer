@@ -35,9 +35,10 @@ curl -sL https://raw.githubusercontent.com/hinominant/goto-orchestrator/main/ins
 ├── commands/        # カスタムスラッシュコマンド
 ├── settings.json    # 安全なPermissions設定（--with-permissions時）
 ├── hooks/           # セキュリティHooks（--with-hooks時）
-│   ├── tool-risk.js    # PreToolUse リスク評価
-│   ├── post-tool-use.js # PostToolUse ログ記録
-│   └── stop-hook.js    # Stop セッションサマリ
+│   ├── tool-risk.js         # PreToolUse リスク評価
+│   ├── post-tool-use.js     # PostToolUse ログ記録
+│   ├── elicitation-guard.js # Elicitation インジェクションガード
+│   └── stop-hook.js         # Stop セッションサマリ
 └── scripts/         # MCP・Cloud実行スクリプト
 .agents/
 ├── PROJECT.md       # 共有ナレッジ（チーム全体で蓄積）
@@ -85,7 +86,7 @@ curl -sL https://raw.githubusercontent.com/hinominant/goto-orchestrator/main/ins
 ### コンテキストが切れた
 
 Claude Code のセッションが長くなるとコンテキストが圧縮されます。
-圧縮後は [Context Recovery Protocol](./_common/CONTEXT_RECOVERY.md) に従って復帰してください。
+圧縮後は [Context Recovery Protocol](../_common/CONTEXT_RECOVERY.md) に従って復帰してください。
 
 ### エージェントが暴走した
 

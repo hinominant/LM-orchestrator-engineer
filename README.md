@@ -105,7 +105,8 @@ your-project/
 │   │   ├── git-pr-prep.md    # PR準備
 │   │   ├── diff-analysis.md  # Diff分析
 │   │   ├── secret-scan.md    # シークレット検出スキャン
-│   │   └── safety-check.md   # 安全性チェック
+│   │   ├── safety-check.md   # 安全性チェック
+│   │   └── external-install-check.md  # 外部コンテンツ導入前セキュリティチェック
 │   └── scripts/
 │       └── cloud/
 │           ├── codespace.sh      # Codespaces CLIラッパー
@@ -325,7 +326,7 @@ User Request
 | PROJECT_AFFINITY | エージェント×プロジェクトタイプの親和性マッピング |
 | REVERSE_FEEDBACK | 下流→上流の品質フィードバック |
 
-## Custom Commands (6)
+## Custom Commands (7)
 
 エージェントとは別に、ワークフローモードとして使えるスラッシュコマンド。デフォルトで全てインストールされる。
 
@@ -337,6 +338,7 @@ User Request
 | `/playground` | 外部依存ゼロの単一HTMLツール生成。open コマンドで即確認 | Forge(プロトタイプ全般) に対し、単一ファイル特化 |
 | `/chrome` | Playwrightでブラウザ操作。既存セッション活用、スクショ確認 | Navigator(フルエージェント) の軽量インライン版 |
 | `/pr-review` | テスト/エラー処理/型/品質/シンプル化の5観点で構造化レビュー | Judge(バグ検出特化) に対し、多面的・構造化 |
+| `/retro` | スプリントレトロスペクティブ。Keep/Problem/Try を構造化して `.context/retros/` に記録 | — |
 
 ```bash
 /superpowers 認証システムをリファクタリングして
@@ -345,6 +347,7 @@ User Request
 /playground マークダウンエディタを作って
 /chrome このページのデータを収集して
 /pr-review #123
+/retro 今週のスプリントを振り返って
 ```
 
 ## Execution Modes

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Claude Code を安全に使うためのエージェントフレームワーク。67エージェント体制。27+プロトコル + 6スキル + Tool Risk Hooks（4-Hook体制）。Security-First設計で、初心者でも安心してClaude Codeを使い始められる。
+Claude Code を安全に使うためのエージェントフレームワーク。67エージェント体制。27+プロトコル + 7スキル + Tool Risk Hooks（4-Hook体制）。Security-First設計で、初心者でも安心してClaude Codeを使い始められる。
 
 各プロジェクトに `install.sh` でエージェント定義を配布する。このリポジトリ自体はレジストリであり、直接 clone して使うものではない。
 
@@ -82,21 +82,23 @@ goto-orchestrator/
 │   ├── warden/          # UX品質ゲート
 │   └── (各エージェントに references/ サブディレクトリあり)
 │   └── _base.tmpl       # SKILL.md構造テンプレート
-├── commands/            # カスタムスラッシュコマンド（6個）
+├── commands/            # カスタムスラッシュコマンド（7個）
 │   ├── superpowers.md    # リサーチ→TDD→検証の大規模タスクモード
 │   ├── frontend-design.md # 数値基準付きデザインプロトコル
 │   ├── code-simplifier.md # git diffベースの軽量クリーンアップ
 │   ├── playground.md     # 単一HTMLインタラクティブツール生成
 │   ├── chrome.md         # Playwrightブラウザ操作自動化
-│   └── pr-review.md     # 5観点構造化PRレビュー
-├── skills/              # 再利用可能スキル（6個）
+│   ├── pr-review.md      # 5観点構造化PRレビュー
+│   └── retro.md          # スプリントレトロスペクティブ
+├── skills/              # 再利用可能スキル（7個）
 │   ├── spec-compliance.md  # SPEC準拠チェック
 │   ├── test-coverage.md    # カバレッジ分析
 │   ├── git-pr-prep.md      # PR準備
 │   ├── diff-analysis.md    # Diff-aware分析
 │   ├── secret-scan.md      # シークレット検出スキャン
-│   └── safety-check.md     # 安全性チェック
-├── _common/             # 共通プロトコル（27+）
+│   ├── safety-check.md     # 安全性チェック
+│   └── external-install-check.md  # 外部コンテンツ導入前セキュリティチェック
+├── _common/             # 共通プロトコル（28個）
 │   ├── AUTORUN.md
 │   ├── INTERACTION.md
 │   ├── GUARDRAIL.md
@@ -122,7 +124,9 @@ goto-orchestrator/
 │   ├── SPEC_FIRST.md          # 仕様→テスト→実装パイプライン
 │   ├── ESCALATION.md          # 時間ベース3段階エスカレーション
 │   ├── SLIM_CONTEXT.md        # トークン予算管理
-│   └── SKILL_DISCOVERY.md     # ボトムアップ スキル発見
+│   ├── SKILL_DISCOVERY.md     # ボトムアップ スキル発見
+│   ├── COMPONENT_SPEC.md      # コンポーネント仕様プロトコル
+│   └── ENGINE_ROUTING.md      # エンジンルーティングプロトコル
 ├── _templates/          # プロジェクト配布テンプレート
 │   ├── CLAUDE_PROJECT.md  → .claude/agents/_framework.md
 │   ├── PROJECT.md         → .agents/PROJECT.md
@@ -148,11 +152,19 @@ goto-orchestrator/
 │   │   └── .env.example
 │   ├── setup-mcp.sh    # MCP一括セットアップ
 │   └── check-drift.sh  # SKILL.md構造ドリフト検出
-├── docs/                # ドキュメント
-│   ├── AGENT_SELECTION.md  # エージェント選択ガイド
-│   ├── QUICKSTART.md       # クイックスタート
-│   ├── FAQ.md              # よくある質問
-│   └── CLOUD_ARCHITECTURE.md # Cloud-first実行基盤アーキテクチャ
+├── docs/                # ドキュメント（12個）
+│   ├── QUICKSTART.md           # クイックスタート
+│   ├── BEGINNERS_GUIDE.md      # 初心者向けガイド
+│   ├── AGENT_SELECTION.md      # エージェント選択ガイド
+│   ├── FAQ.md                  # よくある質問
+│   ├── SECURITY_ARCHITECTURE.md # セキュリティアーキテクチャ（多層防御・CVE対応）
+│   ├── ARCHITECTURE.md         # システムアーキテクチャ全体設計
+│   ├── FLAG_SYSTEM.md          # フラグシステム仕様
+│   ├── GUARDRAIL_LEVELS.md     # ガードレールレベル（L1-L4）
+│   ├── AUTO_REPAIR.md          # 自動修復システム（AR-L0〜L3）
+│   ├── DESIGN_DECISIONS.md     # 設計決定記録（ADR 12件）
+│   ├── FAILURE_PATTERNS.md     # 失敗パターン辞書
+│   └── CLOUD_ARCHITECTURE.md   # Cloud-first実行基盤アーキテクチャ
 ├── .github/workflows/
 │   └── drift-check.yml  # PR時ドリフトチェックCI
 └── install.sh           # インストーラー（--with-hooks / --with-mcp / --with-permissions対応）
@@ -195,7 +207,7 @@ goto-orchestrator/
 | L3 | セキュリティスキャン |
 | L4 | 破壊的操作の最終確認 |
 
-## Custom Commands (6)
+## Custom Commands (7)
 
 エージェント召喚とは異なり、現在のセッションにワークフローモードを適用するスラッシュコマンド。
 
@@ -207,8 +219,9 @@ goto-orchestrator/
 | `/playground` | 外部依存ゼロの単一HTMLツール生成 |
 | `/chrome` | Playwright でブラウザ操作自動化 |
 | `/pr-review` | 5観点（テスト/エラー/型/品質/シンプル化）の構造化レビュー |
+| `/retro` | スプリントレトロスペクティブ（Keep/Problem/Try 構造化記録） |
 
-## Skills (6)
+## Skills (7)
 
 エージェントから呼び出される再利用可能な手順スキル（原則 haiku で実行）。
 
@@ -220,6 +233,7 @@ goto-orchestrator/
 | `diff-analysis` | Diff-aware分析 |
 | `secret-scan` | シークレット検出スキャン（APIキー・トークン・認証情報の検出） |
 | `safety-check` | 安全性チェック（破壊的操作・セキュリティリスクの事前評価） |
+| `external-install-check` | 外部コンテンツ（MCP・npm・スクリプト）導入前の必須セキュリティチェック |
 
 ## Installation (per-project)
 

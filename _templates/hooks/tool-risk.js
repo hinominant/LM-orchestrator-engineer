@@ -80,11 +80,22 @@ const SAFETY_GATE_PATTERNS = [
       /dotenv.*values|load_dotenv|require\s*\(?\s*['"]dotenv['"]/.test(cmd) && /print|console\.log/.test(cmd),
     reason: 'Safety Gate: シークレット変数のstdout出力リスク（CI/CDログ漏洩の危険）',
   },
+  {
+    // パイプ経由のスクリプト実行（サプライチェーン攻撃）
+    // curl/wget | bash/sh, bash <(curl ...), sh <(wget ...)
+    test: (cmd) =>
+      /(?:curl|wget)\s+.*\|\s*(?:ba)?sh\b/.test(cmd) ||
+      /(?:ba)?sh\b\s+<\s*\(\s*(?:curl|wget)/.test(cmd),
+    reason: 'Safety Gate: パイプ経由の外部スクリプト実行 — サプライチェーン攻撃リスク。/external-install-check を先に実行してください',
+  },
 ];
 
 // === Risk Classification Patterns ===
 
 const HIGH_RISK_PATTERNS = [
+  // 外部コンテンツの無検証インストール（サプライチェーン攻撃）
+  /npx\s+(-y|--yes)\s+/,
+  /claude\s+mcp\s+add\b/,
   /rm\s+.*(-[a-zA-Z]*f|-[a-zA-Z]*r|--force|--recursive)/,
   /git\s+push\s+.*--force/,
   /git\s+push\s+.*-f\b/,

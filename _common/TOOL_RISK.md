@@ -122,12 +122,13 @@ Layer 4: Guardrails（L1-L4）
 | コスト暴走 | `while true`, 大量ループ | リソース制御不能 |
 | シークレット露出 | echo/printf でシークレット変数を stdout に出力 | ログへの漏洩 |
 | .env コミット | `git add .env` | シークレットのバージョン管理混入 |
+| パイプ実行 | `curl \| bash`, `wget \| sh`, `bash <(curl ...)` | サプライチェーン攻撃（SEC-013） |
 
 ### Bash コマンドリスク分類
 
 | Risk | Commands |
 |------|----------|
-| HIGH | `rm -rf`, `git push --force`, `git reset --hard`, `DROP TABLE`, `DELETE FROM`, `TRUNCATE`, `docker rm -f`, `kill -9`, `chmod 777`, `mkfs`, `dd`, `shutdown`, Bearer/Basic トークン付き curl |
+| HIGH | `rm -rf`, `git push --force`, `git reset --hard`, `DROP TABLE`, `DELETE FROM`, `TRUNCATE`, `docker rm -f`, `kill -9`, `chmod 777`, `mkfs`, `dd`, `shutdown`, Bearer/Basic トークン付き curl, `npx -y <pkg>`, `claude mcp add` |
 | MEDIUM | `git push`, `git commit`, `npm publish`, `docker build`, `pip install`, `curl -X POST/PUT/DELETE`, `ssh`, `scp`, `brew install/uninstall` |
 | LOW | `ls`, `cat`, `grep`, `git status`, `git log`, `git diff`, `npm test`, `echo`, `pwd`, `which` |
 
