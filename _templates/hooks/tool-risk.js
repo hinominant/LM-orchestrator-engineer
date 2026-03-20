@@ -120,6 +120,14 @@ const SAFETY_GATE_PATTERNS = [
       /(?:ba)?sh\b\s+<\s*\(\s*(?:curl|wget)/.test(cmd),
     reason: 'Safety Gate: パイプ経由の外部スクリプト実行 — サプライチェーン攻撃リスク。/external-install-check を先に実行してください',
   },
+  {
+    // 本番DB接続文字列の使用 — localhost以外の接続文字列は本番環境の可能性
+    // 個人情報保護法: 本番データへのアクセスは第三者提供に該当するリスク
+    test: (cmd) =>
+      /(?:postgresql|mysql|mongodb|redis):\/\/[^:]+:[^@]+@(?!localhost|127\.0\.0\.1|0\.0\.0\.0)/i.test(cmd) ||
+      /(?:DATABASE_URL|DB_URL|MONGO_URL|REDIS_URL)\s*=\s*['"]?(?:postgresql|mysql|mongodb|redis):\/\/[^:]+:[^@]+@(?!localhost)/i.test(cmd),
+    reason: 'Safety Gate: 本番DB接続文字列を検出 — 個人情報・機密データへのアクセスは入力禁止情報ポリシーに違反する可能性があります。DATA_PROTECTION.md を確認してください',
+  },
 ];
 
 // === Risk Classification Patterns ===

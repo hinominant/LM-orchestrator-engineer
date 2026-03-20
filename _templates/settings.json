@@ -100,7 +100,14 @@
       "Write(.env)",
       "Write(.env.*)",
       "Edit(.env)",
-      "Edit(.env.*)"
+      "Edit(.env.*)",
+      "Read(**/candidates*.csv)",
+      "Read(**/applicants*.csv)",
+      "Read(**/personal_data/**)",
+      "Read(data/production/**)",
+      "Read(data/prod/**)",
+      "Read(**/*_backup.sql)",
+      "Read(**/*.dump)"
     ]
   },
   "hooks": {

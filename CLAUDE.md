@@ -2,7 +2,7 @@
 
 ## Overview
 
-Claude Code を安全に使うためのエージェントフレームワーク。67エージェント体制。27+プロトコル + 7スキル + Tool Risk Hooks（4-Hook体制）。Security-First設計で、初心者でも安心してClaude Codeを使い始められる。
+Claude Code を安全に使うためのエージェントフレームワーク。67エージェント体制。27+プロトコル + 8スキル + Tool Risk Hooks（4-Hook体制）。Security-First設計で、初心者でも安心してClaude Codeを使い始められる。
 
 各プロジェクトに `install.sh` でエージェント定義を配布する。このリポジトリ自体はレジストリであり、直接 clone して使うものではない。
 
@@ -97,7 +97,8 @@ goto-orchestrator/
 │   ├── diff-analysis.md    # Diff-aware分析
 │   ├── secret-scan.md      # シークレット検出スキャン
 │   ├── safety-check.md     # 安全性チェック
-│   └── external-install-check.md  # 外部コンテンツ導入前セキュリティチェック
+│   ├── external-install-check.md  # 外部コンテンツ導入前セキュリティチェック
+│   └── data-guard.md       # データ保護事前チェック（個人情報・本番データ・機密情報）
 ├── _common/             # 共通プロトコル（28個）
 │   ├── AUTORUN.md
 │   ├── INTERACTION.md
@@ -234,6 +235,7 @@ goto-orchestrator/
 | `secret-scan` | シークレット検出スキャン（APIキー・トークン・認証情報の検出） |
 | `safety-check` | 安全性チェック（破壊的操作・セキュリティリスクの事前評価） |
 | `external-install-check` | 外部コンテンツ（MCP・npm・スクリプト）導入前の必須セキュリティチェック |
+| `data-guard` | データ保護事前チェック（個人情報・本番データ・機密情報の除外確認） |
 
 ## Installation (per-project)
 

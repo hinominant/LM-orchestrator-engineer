@@ -1,0 +1,64 @@
+{
+  "_comment": "Managed Settings — 組織全体に強制適用するセキュリティポリシー。MDM/設定管理ツールで全端末に配布。macOS: /Library/Application Support/ClaudeCode/managed-settings.json / Linux: /etc/claude-code/managed-settings.json",
+  "_version": "1.0.0",
+  "_reference": "docs/SECURITY_ARCHITECTURE.md, _common/DATA_PROTECTION.md",
+
+  "enableAllProjectMcpServers": false,
+  "disableBypassPermissionsMode": "disable",
+
+  "allowManagedPermissionRulesOnly": false,
+  "allowManagedHooksOnly": false,
+
+  "sandbox": {
+    "_comment": "OS レベルサンドボックス。機密ファイルへの直接アクセスをブロック。",
+    "enabled": true,
+    "allowUnsandboxedCommands": false,
+    "filesystem": {
+      "denyRead": [
+        "~/.aws/credentials",
+        "~/.aws/config",
+        "~/.ssh/id_*",
+        "~/.ssh/config",
+        "~/.gnupg/**",
+        "~/.config/gh/hosts.yml",
+        "~/.netrc"
+      ]
+    }
+  },
+
+  "permissions": {
+    "_comment": "組織ポリシーとして強制。個人の settings.json より優先される。",
+    "deny": [
+      "Bash(sudo *)",
+      "Bash(rm -rf /)",
+      "Bash(rm -rf ~)",
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf ~/*)",
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "Bash(git reset --hard *)",
+      "Bash(osascript *)",
+      "Bash(security *)",
+      "Bash(curl *)",
+      "Bash(wget *)",
+      "Bash(pbcopy *)",
+      "Bash(pbpaste *)",
+      "Bash(nc *)",
+      "Bash(ncat *)",
+      "Bash(python3 -c *)",
+      "Bash(node -e *)",
+      "Bash(node -r *)",
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./secrets/**)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
+      "Read(**/credentials.json)",
+      "Read(**/.htpasswd)",
+      "Write(.env)",
+      "Write(.env.*)",
+      "Edit(.env)",
+      "Edit(.env.*)"
+    ]
+  }
+}

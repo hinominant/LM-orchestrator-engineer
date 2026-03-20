@@ -1907,3 +1907,4 @@ Phase 3 の Managed Settings に加え、プロジェクトレベルの settings
 | 2026-03-19 | 1.0.0 | 初版作成。5層防御アーキテクチャ、7脅威モデル、4段階チェックリスト |
 | 2026-03-20 | 1.1.0 | SEC-008〜SEC-012 追加（MCP Elicitation、ANTHROPIC_BASE_URL、設定ファイル経由RCE、allowバイパス、AI生成コード埋め込み）。Elicitation Hook（elicitation-guard.js）追加でHook体制を4本に拡張。Layer 2にallowバイパス穴の注意事項と追加denyルール（macOS固有・インタープリタ）を追記。既知CVE一覧セクション新設（5件）。 |
 | 2026-03-20 | 1.2.0 | SEC-013（外部インストール経由の侵入）追加。tool-risk.js に `curl\|bash` / `wget\|sh` Safety Gate ブロック、`npx -y` / `claude mcp add` HIGH リスクパターン追加。external-install-check スキル新設（MCP・npm・スクリプト導入前必須チェック手順）。 |
+| 2026-03-21 | 1.3.0 | データ保護・J-SOX・個人情報保護法対応を追加。tool-risk.js に本番DB接続文字列 Safety Gate ブロック追加。post-tool-use.js に operator/project フィールド追加（J-SOX 7年ログ対応）。`.claudeignore` テンプレート新設（採用候補者・本番データ除外）。`managed-settings.json` テンプレート新設（組織ポリシー一元管理）。`AI_USAGE_POLICY.md` テンプレート新設（IPO審査対応）。`data-guard` スキル新設（DLP事前チェック）。settings.json に個人情報ファイル deny ルール追加。 |

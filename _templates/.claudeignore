@@ -1,0 +1,88 @@
+# .claudeignore — Claude Code がコンテキストに読み込まないファイル・ディレクトリ
+# Claude Code の --add-dir / @ 参照でもこれらのパスは物理的に除外される
+# 参照: _common/DATA_PROTECTION.md
+
+# ========================================================================
+# 個人情報・機密データ（改正個人情報保護法対応）
+# Claude Code への入力 = 第三者提供に該当する可能性があるため除外
+# ========================================================================
+
+# 採用候補者データ（適性診断・評価シート等）
+data/candidates/
+data/recruitment/
+**/candidates*.csv
+**/candidates*.xlsx
+**/applicants*.csv
+**/screening*.csv
+**/assessment*.csv
+
+# 顧客個人情報
+data/customers/
+data/users_pii/
+**/customer_export*.csv
+**/users_export*.csv
+**/personal_data/
+
+# 従業員情報
+data/employees/
+data/hr/
+**/employee*.csv
+**/payroll*.csv
+
+# ========================================================================
+# 本番データ・接続情報
+# ========================================================================
+
+# 本番DBダンプ・バックアップ
+data/production/
+data/prod/
+**/*.sql.gz
+**/*.dump
+**/*_backup.sql
+**/db_dump*.sql
+
+# データエクスポート（本番データが含まれる可能性）
+exports/
+backups/
+
+# ========================================================================
+# シークレット・認証情報（settings.json deny と二重防御）
+# ========================================================================
+
+.env
+.env.*
+.envrc
+secrets/
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+**/credentials.json
+**/.htpasswd
+**/.netrc
+
+# ========================================================================
+# 未公開財務情報（IPO審査・内部統制対応）
+# ========================================================================
+
+docs/finance/
+docs/internal/
+**/financial_projections*.xlsx
+**/revenue_forecast*.xlsx
+**/budget_internal*.xlsx
+**/board_*.pdf
+**/investor_*.pdf
+
+# ========================================================================
+# プロジェクト固有カスタマイズ例（コメントアウト → 必要に応じて有効化）
+# ========================================================================
+
+# [Mikiwame] 採用業務特有データ
+# data/mikiwame/
+# **/aptitude_test_results*.csv
+# **/interview_evaluations*.xlsx
+# **/offer_letters/
+
+# [一般SaaS] 本番ユーザーデータ
+# data/prod_users/
+# analytics/raw/

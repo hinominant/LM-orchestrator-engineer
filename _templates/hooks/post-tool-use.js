@@ -28,6 +28,9 @@ function main() {
   const logEntry = {
     timestamp: new Date().toISOString(),
     session_id: session_id || "unknown",
+    // J-SOX: operator identity and project context for 7-year audit trail
+    operator: process.env.USER || process.env.USERNAME || "unknown",
+    project: path.basename(process.cwd()),
     tool: tool_name,
     input_summary: summarizeInput(tool_name, tool_input),
     success: !tool_output?.error,
