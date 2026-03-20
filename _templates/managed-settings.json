@@ -29,16 +29,24 @@
   },
 
   "permissions": {
-    "_comment": "組織ポリシーとして強制。個人の settings.json より優先される。",
+    "_comment": "組織ポリシーとして強制。個人の settings.json より優先される。settings.json の deny リストと完全同期。",
     "deny": [
       "Bash(sudo *)",
       "Bash(rm -rf /)",
       "Bash(rm -rf ~)",
       "Bash(rm -rf /*)",
       "Bash(rm -rf ~/*)",
+      "Bash(chmod 777 *)",
+      "Bash(chmod 0777 *)",
+      "Bash(chmod a+rwx *)",
+      "Bash(chmod ugo+rwx *)",
       "Bash(git push --force *)",
       "Bash(git push -f *)",
       "Bash(git reset --hard *)",
+      "Bash(git clean -fd *)",
+      "Bash(: > *)",
+      "Bash(mkfs *)",
+      "Bash(dd if=*)",
       "Bash(osascript *)",
       "Bash(security *)",
       "Bash(curl *)",
@@ -47,9 +55,16 @@
       "Bash(pbpaste *)",
       "Bash(nc *)",
       "Bash(ncat *)",
+      "Bash(telnet *)",
       "Bash(python3 -c *)",
       "Bash(node -e *)",
       "Bash(node -r *)",
+      "Bash(* .env*)",
+      "Bash(* ~/.ssh/*)",
+      "Bash(* ~/.aws/*)",
+      "Bash(cat .env*)",
+      "Bash(cat *secret*)",
+      "Bash(cat *credential*)",
       "Read(./.env)",
       "Read(./.env.*)",
       "Read(./secrets/**)",
@@ -60,7 +75,14 @@
       "Write(.env)",
       "Write(.env.*)",
       "Edit(.env)",
-      "Edit(.env.*)"
+      "Edit(.env.*)",
+      "Read(**/candidates*.csv)",
+      "Read(**/applicants*.csv)",
+      "Read(**/personal_data/**)",
+      "Read(data/production/**)",
+      "Read(data/prod/**)",
+      "Read(**/*_backup.sql)",
+      "Read(**/*.dump)"
     ]
   }
 }

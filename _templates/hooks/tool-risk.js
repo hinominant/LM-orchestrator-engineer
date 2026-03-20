@@ -44,19 +44,22 @@ const SAFETY_GATE_PATTERNS = [
     reason: 'Safety Gate: 破壊的操作の検出 — ルート/ホームへのrm',
   },
   {
-    // 破壊的操作: DROP DATABASE, force push to main（上記rmとは別パターン）
+    // 破壊的操作: DROP DATABASE, force push to protected branches（main/master/develop/release/*）
+    // HIGH-4: master/develop/release/* を追加
     test: (cmd) =>
       /DROP\s+(TABLE|DATABASE)/i.test(cmd) ||
-      /git\s+push\s+.*--force\s+.*main/i.test(cmd),
+      /git\s+push\s+.*--force.*(?:main|master|develop|release\/)/i.test(cmd) ||
+      /git\s+push\s+.*(?:main|master|develop|release\/).*--force/i.test(cmd),
     reason: 'Safety Gate: 破壊的操作の検出',
   },
   {
     // コスト制御不能: 無制限ループ（多形式対応）
-    // MED-3: while :, while [ 1 -eq 1 ], for ((;;)), backtick seq
+    // CRIT-B: backtick seq "`seq 9999`" 対応
+    // HIGH-5: for((;;sleep 1)) — 第3フィールドに任意コードを許容する形に修正
     test: (cmd) =>
       /while\s+(?:true|:|\[\s*1\s*-eq\s*1\s*\]|\[\s*true\s*\])/i.test(cmd) ||
-      /for\s*\(\s*\(\s*[^;]*;[^;]*;?\s*\)\s*\)/i.test(cmd) ||
-      /for\s+\w+\s+in\s+[`$]\(seq\s+\d{4,}/i.test(cmd),
+      /for\s*\(\s*\(\s*[^;]*;\s*;[^)]*\)\s*\)/i.test(cmd) ||  // 条件フィールドが空 = 無限ループ
+      /for\s+\w+\s+in\s+(?:\$\(|`)seq\s+\d{4,}/i.test(cmd),
     reason: 'Safety Gate: 無制限ループによるコスト制御不能リスク',
   },
   {
@@ -80,17 +83,20 @@ const SAFETY_GATE_PATTERNS = [
   },
   {
     // python3/node 経由のネットワーク通信・環境変数漏洩バイパス
-    // MED-6: python3 -c printing os.environ, node -e printing process.env
+    // MED-5: subprocess 追加、MED-6: child_process/net.connect 追加
     test: (cmd) =>
-      /python3?\s+-c\s+['"].*(?:urllib|requests|http|socket|os\.environ|os\.getenv)/.test(cmd) ||
-      /node\s+-e\s+['"].*(?:https?|fetch|axios|net\.Socket|process\.env)/.test(cmd),
+      /python3?\s+-c\s+['"].*(?:urllib|requests|http|socket|subprocess|os\.environ|os\.getenv)/.test(cmd) ||
+      /node\s+-e\s+['"].*(?:https?|fetch|axios|net\.Socket|child_process|require\(\s*['"]net['"]\s*\)|net\.connect|process\.env)/.test(cmd),
     reason: 'Safety Gate: python3/node経由のネットワーク通信・環境変数漏洩バイパス試行を検出',
   },
   {
     // osascript / security コマンドによるキーチェーンアクセス（macOS）
-    // HIGH-3: handles sudo prefix (sudo osascript, sudo security)
+    // CRIT-A: フルパス(/usr/bin/osascript)・シェルラッパー(bash -c "osascript ...") 対応
+    // CRIT-D: dump-keychain / list-keychains / show-keychain-info などの全操作をブロック
     test: (cmd) =>
-      /(?:^|sudo\s+)(?:osascript|security\s+(?:find|add|delete|import|export))/i.test(cmd.trim()),
+      /(?:^|[|;&\s`(]|sudo\s+)(?:(?:\/[^\s|;&`]*\/)?osascript)/i.test(cmd.trim()) ||
+      /(?:bash|sh)\s+-c\s+['"][^'"]*\bosascript\b/i.test(cmd) ||
+      /(?:^|[|;&\s`(]|sudo\s+)(?:(?:\/[^\s|;&`]*\/)?security)\s+(?:find|add|delete|import|export|dump|list|show)/i.test(cmd.trim()),
     reason: 'Safety Gate: macOSキーチェーン・GUI操作へのアクセス試行',
   },
   {
@@ -128,12 +134,28 @@ const SAFETY_GATE_PATTERNS = [
     reason: 'Safety Gate: パイプ経由の外部スクリプト実行 — サプライチェーン攻撃リスク。/external-install-check を先に実行してください',
   },
   {
-    // 本番DB接続文字列の使用 — localhost以外の接続文字列は本番環境の可能性
+    // 本番DB接続文字列の使用 — ローカルIP・RFC 1918プライベートIP以外の接続文字列は本番環境の可能性
     // 個人情報保護法: 本番データへのアクセスは第三者提供に該当するリスク
+    // HIGH-6: RFC 1918 private IP ranges (10.x, 172.16-31.x, 192.168.x) を開発環境として許可
     test: (cmd) =>
-      /(?:postgresql|mysql|mongodb|redis):\/\/[^:]+:[^@]+@(?!localhost|127\.0\.0\.1|0\.0\.0\.0)/i.test(cmd) ||
-      /(?:DATABASE_URL|DB_URL|MONGO_URL|REDIS_URL)\s*=\s*['"]?(?:postgresql|mysql|mongodb|redis):\/\/[^:]+:[^@]+@(?!localhost)/i.test(cmd),
+      /(?:postgresql|mysql|mongodb|redis):\/\/[^:]+:[^@]+@(?!localhost|127\.0\.0\.1|0\.0\.0\.0|(?:10|172\.(?:1[6-9]|2\d|3[01])|192\.168)\.)/i.test(cmd) ||
+      /(?:DATABASE_URL|DB_URL|MONGO_URL|REDIS_URL)\s*=\s*['"]?(?:postgresql|mysql|mongodb|redis):\/\/[^:]+:[^@]+@(?!localhost|127\.0\.0\.1|(?:10|172\.(?:1[6-9]|2\d|3[01])|192\.168)\.)/i.test(cmd),
     reason: 'Safety Gate: 本番DB接続文字列を検出 — 個人情報・機密データへのアクセスは入力禁止情報ポリシーに違反する可能性があります。DATA_PROTECTION.md を確認してください',
+  },
+  {
+    // .envファイルの直接読み取り・パイプ経由エクスフィルトレーション
+    // CRIT-E: cat .env | base64 などのパイプ経由漏洩
+    // HIGH-2: cat .env.production など直接読み取り（deny list に加えてフックでも検知）
+    test: (cmd) =>
+      /\bcat\s+[^\n|;&`]*\.env\b/i.test(cmd),
+    reason: 'Safety Gate: .envファイルの直接読み取りリスク — シークレット漏洩の危険。ファイル内容が必要な場合は Read ツールを使用してください',
+  },
+  {
+    // .envファイルへの代替読み取りツールによる Safety Gate 回避防止（BYPASS-5）
+    // head/tail/tac/less/more/sort 等のツールによるバイパスを防止
+    test: (cmd) =>
+      /\b(?:head|tail|tac|less|more|sort)\s+[^\n|;&`]*\.env\b/i.test(cmd),
+    reason: 'Safety Gate: .envファイルの読み取りリスク — シークレット漏洩の危険。ファイル内容が必要な場合は Read ツールを使用してください',
   },
 ];
 
@@ -175,7 +197,7 @@ const HIGH_RISK_PATTERNS = [
   /(?:curl|wget|http).*(?:Bearer|Basic)\s+[A-Za-z0-9_\-\.]{20,}/i,
   /ANTHROPIC_BASE_URL/,
   /enableAllProjectMcpServers/,
-  /curl\s+.*-[bBdD]/,  // curl with data flags
+  /curl\s+.*(?:-[dD]\b|--data(?:-[a-z]+)?\b)/,  // curl with POST data flags (-b cookie is excluded)
   /wget\s+.*--post/i,
 ];
 

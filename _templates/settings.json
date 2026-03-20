@@ -32,7 +32,7 @@
     }
   },
   "permissions": {
-    "_comment": "allow: 明示的に許可するコマンド（最小権限）。deny: 危険・機密漏洩リスクのある操作を拒否。denyが優先される。",
+    "_comment": "allow: 明示的に許可するコマンド（最小権限）。deny: 危険・機密漏洩リスクのある操作を拒否。denyが優先される。[HIGH-7] npx * は allow にあるが tool-risk.js フックが npx -y を HIGH として ask_user する。allowはUI承認ダイアログのスキップのみでフックは常に実行される。",
     "allow": [
       "Bash(npm test *)",
       "Bash(npm run *)",

@@ -24,7 +24,9 @@ function main() {
   // ツールログからセッションサマリを生成
   const logFile = path.join(process.cwd(), ".context", "tool-log.jsonl");
 
-  if (fs.existsSync(logFile)) {
+  // MED-3: ログファイルサイズ上限チェック（10MB超はスキップしてOOM回避）
+  const MAX_LOG_BYTES = 10 * 1024 * 1024;
+  if (fs.existsSync(logFile) && fs.statSync(logFile).size <= MAX_LOG_BYTES) {
     const lines = fs.readFileSync(logFile, "utf8").trim().split("\n");
     const sessionLogs = lines
       .map((l) => {
