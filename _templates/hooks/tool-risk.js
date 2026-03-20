@@ -84,9 +84,10 @@ const SAFETY_GATE_PATTERNS = [
   {
     // python3/node 経由のネットワーク通信・環境変数漏洩バイパス
     // MED-5: subprocess 追加、MED-6: child_process/net.connect 追加
+    // AUDIT-FIX: python3 --command 長形式、node --eval/-p も検知
     test: (cmd) =>
-      /python3?\s+-c\s+['"].*(?:urllib|requests|http|socket|subprocess|os\.environ|os\.getenv)/.test(cmd) ||
-      /node\s+-e\s+['"].*(?:https?|fetch|axios|net\.Socket|child_process|require\(\s*['"]net['"]\s*\)|net\.connect|process\.env)/.test(cmd),
+      /python3?\s+(?:-c|--command)\s+['"].*(?:urllib|requests|http|socket|subprocess|os\.environ|os\.getenv)/.test(cmd) ||
+      /node\s+(?:-e|--eval|-p)\s+['"].*(?:https?|fetch|axios|net\.Socket|child_process|require\(\s*['"]net['"]\s*\)|net\.connect|process\.env)/.test(cmd),
     reason: 'Safety Gate: python3/node経由のネットワーク通信・環境変数漏洩バイパス試行を検出',
   },
   {
@@ -109,9 +110,11 @@ const SAFETY_GATE_PATTERNS = [
   },
   {
     // eval 経由のリモートコード実行（HIGH-4: eval "$(curl ...)"）
+    // AUDIT-FIX: バックティック形式 eval `curl ...` も検知
     test: (cmd) =>
       /eval\s+["'`]?\$\((?:curl|wget)/.test(cmd) ||
-      /eval\s+["'][^'"]*(?:curl|wget)/.test(cmd),
+      /eval\s+["'][^'"]*(?:curl|wget)/.test(cmd) ||
+      /eval\s+`[^`]*(?:curl|wget)/i.test(cmd),
     reason: 'Safety Gate: eval経由のリモートコード実行リスク',
   },
   {
@@ -152,9 +155,9 @@ const SAFETY_GATE_PATTERNS = [
   },
   {
     // .envファイルへの代替読み取りツールによる Safety Gate 回避防止（BYPASS-5）
-    // head/tail/tac/less/more/sort 等のツールによるバイパスを防止
+    // head/tail/tac/less/more/sort + AUDIT-FIX: grep/awk/sed/vi/vim/nano/nl/wc/diff も追加
     test: (cmd) =>
-      /\b(?:head|tail|tac|less|more|sort)\s+[^\n|;&`]*\.env\b/i.test(cmd),
+      /\b(?:head|tail|tac|less|more|sort|grep|awk|sed|vi|vim|nano|nl|wc|diff)\s+[^\n|;&`]*\.env\b/i.test(cmd),
     reason: 'Safety Gate: .envファイルの読み取りリスク — シークレット漏洩の危険。ファイル内容が必要な場合は Read ツールを使用してください',
   },
 ];
@@ -169,11 +172,16 @@ const HIGH_RISK_PATTERNS = [
   /git\s+add\s+(-A|--all)\b/,
   /git\s+add\s+\.\s*$/,
   /git\s+add\s+\*\s*$/,
+  // AUDIT-FIX: git add -u/--update stages all tracked modified files (same risk as -A for existing files)
+  /git\s+add\s+(-u|--update)\b/,
   /rm\s+.*(-[a-zA-Z]*f|-[a-zA-Z]*r|--force|--recursive)/,
   // MED-5 fix: --force-with-lease is safe, only flag plain --force
   /git\s+push\s+.*--force(?!-with-lease)/,
   /git\s+push\s+.*-f\b/,
   /git\s+reset\s+--hard/,
+  // AUDIT-FIX: git checkout . / git restore . promoted from MEDIUM (same effect: discards all uncommitted changes)
+  /git\s+checkout\s+\./,
+  /git\s+restore\s+\./,
   /git\s+clean\s+-[a-zA-Z]*f/,
   /git\s+branch\s+-D/,
   /DROP\s+(TABLE|DATABASE|INDEX)/i,
@@ -206,8 +214,9 @@ const MEDIUM_RISK_PATTERNS = [
   /git\s+commit/,
   /git\s+merge/,
   /git\s+rebase/,
-  /git\s+checkout\s+\./,
-  /git\s+restore\s+\./,
+  // AUDIT-FIX: promoted to HIGH (same destructive effect as git reset --hard which is HIGH)
+  // /git\s+checkout\s+\./,  // moved to HIGH_RISK_PATTERNS
+  // /git\s+restore\s+\./,   // moved to HIGH_RISK_PATTERNS
   /npm\s+publish/,
   /npm\s+install\s+-g/,
   /pip\s+install/,
