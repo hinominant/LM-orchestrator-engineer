@@ -2,7 +2,7 @@
 
 ## Overview
 
-Claude Code を安全に使うためのエージェントフレームワーク。73エージェント体制。27+プロトコル + 9スキル + Tool Risk Hooks（4-Hook体制）。Security-First設計で、初心者でも安心してClaude Codeを使い始められる。
+Claude Code を安全に使うためのエージェントフレームワーク。73エージェント体制。30プロトコル + 9スキル + Tool Risk Hooks（4-Hook体制）。Security-First設計で、初心者でも安心してClaude Codeを使い始められる。
 
 各プロジェクトに `install.sh` でエージェント定義を配布する。このリポジトリ自体はレジストリであり、直接 clone して使うものではない。
 
@@ -94,7 +94,9 @@ LM-orchestrator-engineer/
 │   ├── playground.md     # 単一HTMLインタラクティブツール生成
 │   ├── chrome.md         # Playwrightブラウザ操作自動化
 │   ├── pr-review.md      # 5観点構造化PRレビュー
-│   └── retro.md          # スプリントレトロスペクティブ
+│   ├── retro.md          # スプリントレトロスペクティブ
+│   ├── implement.md      # 新機能追加ワークフロー
+│   └── quality-gate.md   # Push前品質ゲート
 ├── skills/              # 再利用可能スキル（9個）
 │   ├── spec-compliance.md  # SPEC準拠チェック
 │   ├── test-coverage.md    # カバレッジ分析
@@ -105,7 +107,7 @@ LM-orchestrator-engineer/
 │   ├── external-install-check.md  # 外部コンテンツ導入前セキュリティチェック
 │   ├── data-guard.md       # データ保護事前チェック（個人情報・本番データ・機密情報）
 │   └── design-md.md       # Figma → DESIGN.md 変換（デザイントークン翻訳層）
-├── _common/             # 共通プロトコル（28個）
+├── _common/             # 共通プロトコル（30個）
 │   ├── AUTORUN.md
 │   ├── INTERACTION.md
 │   ├── GUARDRAIL.md
@@ -133,7 +135,9 @@ LM-orchestrator-engineer/
 │   ├── SLIM_CONTEXT.md        # トークン予算管理
 │   ├── SKILL_DISCOVERY.md     # ボトムアップ スキル発見
 │   ├── COMPONENT_SPEC.md      # コンポーネント仕様プロトコル
-│   └── ENGINE_ROUTING.md      # エンジンルーティングプロトコル
+│   ├── ENGINE_ROUTING.md      # エンジンルーティングプロトコル
+│   ├── DATA_PROTECTION.md     # データ保護プロトコル
+│   └── DUAL_CHECK.md          # 2人体制強制プロトコル
 ├── _templates/          # プロジェクト配布テンプレート
 │   ├── CLAUDE_PROJECT.md  → .claude/agents/_framework.md
 │   ├── PROJECT.md         → .agents/PROJECT.md
@@ -159,7 +163,7 @@ LM-orchestrator-engineer/
 │   │   └── .env.example
 │   ├── setup-mcp.sh    # MCP一括セットアップ
 │   └── check-drift.sh  # SKILL.md構造ドリフト検出
-├── docs/                # ドキュメント（12個）
+├── docs/                # ドキュメント（18個）
 │   ├── QUICKSTART.md           # クイックスタート
 │   ├── BEGINNERS_GUIDE.md      # 初心者向けガイド
 │   ├── AGENT_SELECTION.md      # エージェント選択ガイド
@@ -171,7 +175,13 @@ LM-orchestrator-engineer/
 │   ├── AUTO_REPAIR.md          # 自動修復システム（AR-L0〜L3）
 │   ├── DESIGN_DECISIONS.md     # 設計決定記録（ADR 12件）
 │   ├── FAILURE_PATTERNS.md     # 失敗パターン辞書
-│   └── CLOUD_ARCHITECTURE.md   # Cloud-first実行基盤アーキテクチャ
+│   ├── CLOUD_ARCHITECTURE.md   # Cloud-first実行基盤アーキテクチャ
+│   ├── AI_GOVERNANCE_CHECKLIST.md # AI事業者ガイドライン準拠チェックリスト
+│   ├── AI_INCIDENT_RESPONSE.md # AI経由個人情報漏洩インシデント対応フロー
+│   ├── CROSS_BORDER_TRANSFER.md # 越境移転ガイドライン（個人情報保護法 第28条）
+│   ├── EXTERNAL_API_NOTICE.md  # 外部API利用時の法的注意事項
+│   ├── SECURITY_PATTERNS.md    # セキュリティパターン辞書
+│   └── TRADE_SECRET_GUIDE.md   # 営業秘密保護ガイドライン
 ├── .github/workflows/
 │   └── drift-check.yml  # PR時ドリフトチェックCI
 └── install.sh           # インストーラー（--with-hooks / --with-mcp / --with-permissions対応）
@@ -214,7 +224,7 @@ LM-orchestrator-engineer/
 | L3 | セキュリティスキャン |
 | L4 | 破壊的操作の最終確認 |
 
-## Custom Commands (7)
+## Custom Commands (9)
 
 エージェント召喚とは異なり、現在のセッションにワークフローモードを適用するスラッシュコマンド。
 
@@ -227,6 +237,8 @@ LM-orchestrator-engineer/
 | `/chrome` | Playwright でブラウザ操作自動化 |
 | `/pr-review` | 5観点（テスト/エラー/型/品質/シンプル化）の構造化レビュー |
 | `/retro` | スプリントレトロスペクティブ（Keep/Problem/Try 構造化記録） |
+| `/implement` | 新機能追加ワークフロー（テスト先書き・ドキュメント同時更新） |
+| `/quality-gate` | Push前品質ゲート（3フェーズ検証→コミット→プッシュ） |
 
 ## Skills (9)
 

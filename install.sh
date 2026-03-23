@@ -58,7 +58,7 @@ trap "rm -rf $CLONE_DIR" EXIT
 
 echo "Downloading agent definitions..."
 if ! git clone --depth 1 --branch "$BRANCH" "https://github.com/${REPO}.git" "$CLONE_DIR" 2>&1; then
-  echo "Error: Failed to download LM-orchestrator-engineer. Check your internet connection and try again."
+  echo "エラー: LM-orchestrator-engineer のダウンロードに失敗しました。インターネット接続を確認して再実行してください。"
   exit 1
 fi
 
@@ -79,7 +79,7 @@ for agent in $AGENTS; do
     INSTALLED=$((INSTALLED + 1))
     echo "  -> ${agent}"
   else
-    echo "  [WARN] Agent '${agent}' not found, skipping"
+    echo "  [警告] エージェント '${agent}' が見つかりません。スキップします"
     SKIPPED=$((SKIPPED + 1))
   fi
 done
@@ -171,13 +171,13 @@ if [ -f "$CLONE_DIR/scripts/setup-mcp.sh" ]; then
   chmod +x ".claude/scripts/setup-mcp.sh"
   echo "  -> Copied scripts/setup-mcp.sh"
 else
-  echo "  [WARN] scripts/setup-mcp.sh not found in repo, skipping"
+  echo "  [警告] scripts/setup-mcp.sh がリポジトリに見つかりません。スキップします"
 fi
 if [ -f "$CLONE_DIR/_templates/mcp-settings.json" ]; then
   cp "$CLONE_DIR/_templates/mcp-settings.json" ".claude/mcp-settings.template.json"
   echo "  -> Copied mcp-settings.template.json"
 else
-  echo "  [WARN] _templates/mcp-settings.json not found in repo, skipping"
+  echo "  [警告] _templates/mcp-settings.json がリポジトリに見つかりません。スキップします"
 fi
 # Cloud scripts
 if [ -d "$CLONE_DIR/scripts/cloud" ]; then
@@ -254,7 +254,7 @@ if [ "$WITH_MCP" = true ]; then
     echo "  -> Running MCP setup (--with-mcp flag detected)..."
     bash ".claude/scripts/setup-mcp.sh"
   else
-    echo "  [WARN] .claude/scripts/setup-mcp.sh not found, skipping MCP setup"
+    echo "  [警告] .claude/scripts/setup-mcp.sh が見つかりません。MCPセットアップをスキップします"
   fi
 else
   echo "  -> Skipped (use --with-mcp to auto-setup)"
@@ -280,7 +280,7 @@ if [ "$WITH_PERMISSIONS" = true ]; then
       echo "  -> Copied settings.local.example.json"
     fi
   else
-    echo "  [WARN] _templates/settings.json not found, skipping"
+    echo "  [警告] _templates/settings.json が見つかりません。スキップします"
   fi
 else
   echo "  -> Skipped (use --with-permissions to install safe defaults)"
@@ -290,9 +290,9 @@ echo "[12/12] Hooks setup (4-Hook体制)..."
 if [ "$WITH_HOOKS" = true ]; then
   # Check Node.js is installed (hooks require it)
   if ! command -v node >/dev/null 2>&1; then
-    echo "  [ERROR] Node.js is required for hooks but not found."
-    echo "  Install Node.js 18+ from https://nodejs.org/ and re-run with --with-hooks."
-    echo "  Skipping hook installation."
+    echo "  [エラー] Hooks の実行に Node.js が必要ですが、見つかりません。"
+    echo "  Node.js 18+ を https://nodejs.org/ からインストールし、--with-hooks を付けて再実行してください。"
+    echo "  Hook のインストールをスキップします。"
   else
     NODE_VER=$(node --version 2>/dev/null | sed 's/v//')
     echo "  Node.js ${NODE_VER} detected"
@@ -338,7 +338,7 @@ if [ "$WITH_HOOKS" = true ]; then
         chmod +x ".git/hooks/pre-commit"
         echo "  -> pre-commit (git hook: テスト失敗時はコミット物理ブロック)"
       else
-        echo "  [WARN] .git not found — pre-commit hook skipped (run inside a git repo)"
+        echo "  [警告] .git が見つかりません — pre-commit hook をスキップします（git リポジトリ内で実行してください）"
       fi
     fi
 
