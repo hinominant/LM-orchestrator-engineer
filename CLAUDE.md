@@ -173,7 +173,7 @@ LM-orchestrator-engineer/
 │   ├── FLAG_SYSTEM.md          # フラグシステム仕様
 │   ├── GUARDRAIL_LEVELS.md     # ガードレールレベル（L1-L4）
 │   ├── AUTO_REPAIR.md          # 自動修復システム（AR-L0〜L3）
-│   ├── DESIGN_DECISIONS.md     # 設計決定記録（ADR 12件）
+│   ├── DESIGN_DECISIONS.md     # 設計決定記録（ADR 13件）
 │   ├── FAILURE_PATTERNS.md     # 失敗パターン辞書
 │   ├── CLOUD_ARCHITECTURE.md   # Cloud-first実行基盤アーキテクチャ
 │   ├── AI_GOVERNANCE_CHECKLIST.md # AI事業者ガイドライン準拠チェックリスト

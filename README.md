@@ -298,6 +298,7 @@ User Request
 | SLIM_CONTEXT | トークン予算管理・段階的圧縮・予算配分 |
 | CRITICAL_THINKING | 批判的思考・矛盾検出・根拠付き代替案 |
 | SPEC_FIRST | 仕様→テスト→実装の順序制御 |
+| ENGINE_ROUTING | エンジンルーティング（タスク特性→最適実行エンジン選択） |
 
 ### Operations
 
@@ -312,6 +313,9 @@ User Request
 | CONTEXT_HYGIENE | コンテキスト衛生管理 |
 | REVIEW_CHECKLIST | レビューチェックリスト |
 | PTC | Programmatic Tool Calling |
+| COMPONENT_SPEC | コンポーネント仕様プロトコル |
+| DATA_PROTECTION | データ保護プロトコル |
+| DUAL_CHECK | 2人体制強制プロトコル（主査+副査のクロスチェック） |
 
 ### Automation
 
@@ -529,9 +533,15 @@ Radar が8次元加重ルーブリックで品質スコアリング（70+ PASS /
 | [docs/FLAG_SYSTEM.md](docs/FLAG_SYSTEM.md) | フラグシステム仕様 |
 | [docs/GUARDRAIL_LEVELS.md](docs/GUARDRAIL_LEVELS.md) | ガードレールレベル定義（L1-L4） |
 | [docs/AUTO_REPAIR.md](docs/AUTO_REPAIR.md) | 自動修復システム（AR-L0〜L3） |
-| [docs/DESIGN_DECISIONS.md](docs/DESIGN_DECISIONS.md) | 設計決定記録（ADR 12件） |
+| [docs/DESIGN_DECISIONS.md](docs/DESIGN_DECISIONS.md) | 設計決定記録（ADR 13件） |
 | [docs/FAILURE_PATTERNS.md](docs/FAILURE_PATTERNS.md) | 失敗パターン辞書 |
 | [docs/CLOUD_ARCHITECTURE.md](docs/CLOUD_ARCHITECTURE.md) | Cloud-first実行基盤 |
+| [docs/AI_GOVERNANCE_CHECKLIST.md](docs/AI_GOVERNANCE_CHECKLIST.md) | AI事業者ガイドライン準拠チェックリスト |
+| [docs/AI_INCIDENT_RESPONSE.md](docs/AI_INCIDENT_RESPONSE.md) | AI経由個人情報漏洩インシデント対応フロー |
+| [docs/CROSS_BORDER_TRANSFER.md](docs/CROSS_BORDER_TRANSFER.md) | 越境移転ガイドライン（個人情報保護法 第28条） |
+| [docs/EXTERNAL_API_NOTICE.md](docs/EXTERNAL_API_NOTICE.md) | 外部API利用時の法的注意事項 |
+| [docs/SECURITY_PATTERNS.md](docs/SECURITY_PATTERNS.md) | セキュリティパターン辞書 |
+| [docs/TRADE_SECRET_GUIDE.md](docs/TRADE_SECRET_GUIDE.md) | 営業秘密保護ガイドライン |
 
 ## License
 
